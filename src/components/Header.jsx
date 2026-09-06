@@ -4,7 +4,7 @@ import ChecklistTwoToneIcon from '@mui/icons-material/ChecklistTwoTone';
 function Header() {
   return (
     <header>
-      <h1><ChecklistTwoToneIcon fontSize="large"/> Keeper</h1>
+      <h1><ChecklistTwoToneIcon fontSize="large"/> To-Do</h1>
     </header>
   );
 }
