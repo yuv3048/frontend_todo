@@ -1,0 +1,258 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+html {
+  font-family: "Montserrat", sans-serif;
+}
+body {
+  background: #eee;
+  padding: 0 16px;
+  background-image: url("https://www.transparenttextures.com/patterns/gplay.png");
+}
+
+header {
+  background-color: #f5ba13;
+  margin: auto -16px;
+  padding: 16px 32px;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.3);
+}
+
+header h1 {
+  color: #fff;
+  font-family: "McLaren", cursive;
+  font-weight: 200;
+}
+
+footer {
+  position: absolute;
+  text-align: center;
+  bottom: 0;
+  width: 100%;
+  height: 2.5rem;
+}
+
+footer p {
+  color: #ccc;
+}
+.note {
+  background: #fff;
+  border-radius: 7px;
+  box-shadow: 0 2px 5px #ccc;
+  padding: 10px;
+  width: 240px;
+  margin: 16px;
+  float: left;
+}
+.note h1 {
+  font-size: 1.1em;
+  margin-bottom: 6px;
+}
+.note p {
+  font-size: 1.1em;
+  margin-bottom: 10px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.note button {
+  background-color: #e53935;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 22px;
+  font-weight: bold;
+
+  float: right;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+}
+
+form.create-note {
+  position: relative;
+  width: 480px;
+  margin: 30px auto 20px auto;
+  background: #fff;
+  padding: 15px;
+  border-radius: 7px;
+  box-shadow: 0 1px 5px rgb(138, 137, 137);
+}
+form.create-note input,
+form.create-note textarea {
+  width: 100%;
+  border: none;
+  padding: 4px;
+  outline: none;
+  font-size: 1.2em;
+  font-family: inherit;
+  resize: none;
+}
+form.create-note button {
+  position: absolute;
+  right: 18px;
+  bottom: -18px;
+  background: #f5ba13;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  outline: none;
+}
+
+/* Authentication */
+
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 65vh;
+}
+
+.auth-box {
+  width: 380px;
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+.auth-box h2 {
+  margin-bottom: 25px;
+  color: #555;
+  font-size: 1.8rem;
+}
+
+.auth-box form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.auth-box input {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  outline: none;
+  font-size: 1rem;
+}
+
+.auth-box input:focus {
+  border-color: #f5ba13;
+}
+
+.auth-box form button {
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  background: #f5ba13;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.auth-box form button:hover {
+  background: #e0a900;
+}
+
+.auth-box form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.auth-message {
+  margin-top: 15px;
+  color: #555;
+}
+
+.switch-auth {
+  margin-top: 20px;
+  color: #777;
+}
+
+.switch-auth button {
+  border: none;
+  background: none;
+  color: #f0ad00;
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+.user-bar {
+  width: 480px;
+  margin: 20px auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.user-bar span {
+  color: #777;
+  font-size: 0.9rem;
+}
+
+.user-bar button {
+  border: none;
+  background: #555;
+  color: white;
+  padding: 7px 14px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.user-bar button:hover {
+  background: #333;
+}
+
+.loading {
+  text-align: center;
+  margin-top: 50px;
+  color: #777;
+}
+
+
+/* Todo buttons */
+
+.note-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.note-buttons .complete-button {
+  background: #4caf50;
+  color: white;
+}
+
+.note-buttons .complete-button:hover {
+  background: #388e3c;
+}
+
+.note-buttons .delete-button {
+  background: #e53935;
+  color: white;
+}
+
+.note-buttons .delete-button:hover {
+  background: #c62828;
+}
+
+.note-buttons button {
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
+  min-width: 36px;
+}
