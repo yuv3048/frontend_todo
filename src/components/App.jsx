@@ -4,30 +4,32 @@ import Header from "./Header";
 import Footer from "./Footer";
 import Note from "./Note";
 import CreateArea from "./CreateArea";
+import TodoGroup from "./TodoGroup";
 import Auth from "./Auth";
 
 function App() {
-  const [token, setToken] = useState(
-    localStorage.getItem("token")
-  );
-
   const [notes, setNotes] = useState([]);
+  const [darkMode, setDarkMode] = useState(false);
 
-  const [loading, setLoading] = useState(true);
-
-  function logout() {
-    localStorage.removeItem("token");
-    setToken(null);
-    setNotes([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(
+      Boolean(localStorage.getItem("token"))
+  );
+  
+  function handleLogin() {
+      setIsLoggedIn(true);
   }
 
-  // Get user's todos after login
-  useEffect(() => {
-    if (!token) {
-      setLoading(false);
-      return;
-    }
+  function handleLogout() {
+  localStorage.removeItem("token");
 
+  setNotes([]);
+
+  setIsLoggedIn(false);
+  }
+  
+  const token = localStorage.getItem("token");
+
+  useEffect(() => {
     async function fetchTodos() {
       try {
         const response = await fetch(
@@ -39,205 +41,231 @@ function App() {
           }
         );
 
-        if (response.status === 401) {
-          logout();
-          return;
-        }
-
         const data = await response.json();
 
         if (response.ok) {
           setNotes(data.todos);
+        } else if (response.status === 401) {
+          handleLogout();
         }
       } catch (error) {
         console.error(error);
-      } finally {
-        setLoading(false);
       }
     }
 
-    fetchTodos();
-  }, [token]);
+    if (isLoggedIn && token) {
+      fetchTodos();
+    }
+  }, [isLoggedIn]);
 
-  function handleLogin(newToken) {
-    setToken(newToken);
-  }
-
-  // CREATE TODO
+  // Add Todo
   async function addNote(newNote) {
-    if (
-      newNote.title.trim() === "" &&
-      newNote.content.trim() === ""
-    ) {
-      return;
-    }
-
     try {
-      const response = await fetch(
-        "http://localhost:3000/todos",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            title: newNote.title,
-            content: newNote.content
-          })
-        }
-      );
+      const response = await fetch("http://localhost:3000/todos", {
+        method: "POST",
 
-      if (response.status === 401) {
-        logout();
-        return;
-      }
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+
+        body: JSON.stringify({
+          title: newNote.title,
+          content: newNote.content,
+          deadlineMinutes: newNote.deadlineMinutes
+        })
+      });
 
       const data = await response.json();
 
       if (!response.ok) {
-        console.log(data.message);
+        console.error(data.message);
         return;
       }
 
-      setNotes((prevNotes) => {
-        return [...prevNotes, data.todo];
-      });
+      setNotes((prevNotes) => [
+        ...prevNotes,
+        data.todo
+      ]);
+
     } catch (error) {
       console.error(error);
     }
   }
 
-  // COMPLETE TODO
+  // Complete Todo
   async function completeNote(id) {
     try {
       const response = await fetch(
         `http://localhost:3000/todos/${id}`,
         {
           method: "PATCH",
+
           headers: {
             Authorization: `Bearer ${token}`
           }
         }
       );
 
-      if (response.status === 401) {
-        logout();
-        return;
-      }
-
       const data = await response.json();
 
       if (!response.ok) {
-        console.log(data.message);
+        console.error(data.message);
         return;
       }
 
-      setNotes((prevNotes) => {
-        return prevNotes.map((note) => {
-          if (note._id === id) {
-            return data.todo;
-          }
+      setNotes((prevNotes) =>
+        prevNotes.map((note) =>
+          note._id === id ? data.todo : note
+        )
+      );
 
-          return note;
-        });
-      });
     } catch (error) {
       console.error(error);
     }
   }
 
-  // DELETE TODO
+  // Delete Todo
   async function deleteNote(id) {
     try {
       const response = await fetch(
         `http://localhost:3000/todos/${id}`,
         {
           method: "DELETE",
+
           headers: {
             Authorization: `Bearer ${token}`
           }
         }
       );
 
-      if (response.status === 401) {
-        logout();
-        return;
-      }
-
       const data = await response.json();
 
       if (!response.ok) {
-        console.log(data.message);
+        console.error(data.message);
         return;
       }
 
-      setNotes((prevNotes) => {
-        return prevNotes.filter((note) => {
-          return note._id !== id;
-        });
-      });
+      setNotes((prevNotes) =>
+        prevNotes.filter((note) => note._id !== id)
+      );
+
     } catch (error) {
       console.error(error);
     }
   }
 
-  // If user isn't logged in
-  if (!token) {
-    return (
-      <div>
-        <Header />
+  // Group todos by date 
+  function groupNotesByDate(notes) {
+  const groups = {};
 
-        <Auth onLogin={handleLogin} />
+  const sortedNotes = [...notes].sort(
+    (a, b) =>
+      new Date(b.createdAt) -
+      new Date(a.createdAt)
+  );
 
-        <Footer />
-      </div>
-    );
+  sortedNotes.forEach((note) => {
+    const date = new Date(note.createdAt);
+
+    const key =
+      `${date.getFullYear()}-` +
+      `${date.getMonth()}-` +
+      `${date.getDate()}`;
+
+    if (!groups[key]) {
+      groups[key] = {
+        date,
+        notes: []
+      };
+    }
+
+    groups[key].notes.push(note);
+  });
+
+  return Object.values(groups);
+}
+
+  function formatGroupLabel(date) {
+  const now = new Date();
+
+  if (
+    date.toDateString() ===
+    now.toDateString()
+  ) {
+    return "Today";
   }
 
-  // While getting todos
-  if (loading) {
-    return (
-      <div>
-        <Header />
+  const yesterday = new Date();
+  yesterday.setDate(now.getDate() - 1);
 
-        <p className="loading">Loading your notes...</p>
-
-        <Footer />
-      </div>
-    );
+  if (
+    date.toDateString() ===
+    yesterday.toDateString()
+  ) {
+    return "Yesterday";
   }
 
+  return date.toLocaleDateString([], {
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  });
+}
+
+  const groupedNotes = groupNotesByDate(notes);
+
+  function toggleDarkMode() {
+  setDarkMode((prev) => !prev);
+  }
+
+  if (!isLoggedIn) {
   return (
-    <div>
-      <Header />
+    <div className={darkMode ? "app dark-mode" : "app"}>
+      <Header
+        darkMode={darkMode}
+        onToggleDarkMode={toggleDarkMode}
+      />
 
-      <div className="user-bar">
-        <span>You are logged in</span>
-
-        <button onClick={logout}>
-          Logout
-        </button>
-      </div>
-
-      <CreateArea onAdd={addNote} />
-
-      {notes.map((noteItem) => {
-        return (
-          <Note
-            key={noteItem._id}
-            id={noteItem._id}
-            title={noteItem.title}
-            content={noteItem.content}
-            completed={noteItem.completed}
-            onComplete={completeNote}
-            onDelete={deleteNote}
-          />
-        );
-      })}
+      <Auth onLogin={handleLogin} />
 
       <Footer />
     </div>
+  );
+  }
+
+  return (
+    <div className={darkMode ? "app dark-mode" : "app"}>
+
+    <Header
+      onLogout={handleLogout}
+      showLogout={true}
+      darkMode={darkMode}
+      onToggleDarkMode={toggleDarkMode}
+    />
+
+    <CreateArea onAdd={addNote} />
+
+    <div className="todo-groups">
+      {groupedNotes.map((group) => (
+        <TodoGroup
+          key={group.date.getTime()}
+          label={formatGroupLabel(group.date)}
+        >
+          {group.notes.map((todo) => (
+            <Note
+              key={todo._id}
+              todo={todo}
+              onComplete={completeNote}
+              onDelete={deleteNote}
+            />
+          ))}
+        </TodoGroup>
+      ))}
+    </div>
+
+    <Footer />
+  </div>
   );
 }
 

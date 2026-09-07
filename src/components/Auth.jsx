@@ -7,132 +7,111 @@ function Auth({ onLogin }) {
   const [password, setPassword] = useState("");
 
   const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(event) {
     event.preventDefault();
 
     setMessage("");
-    setLoading(true);
 
     const endpoint = isLogin
-      ? "http://localhost:3000/auth/login"
-      : "http://localhost:3000/auth/signup";
+      ? "login"
+      : "signup";
 
     try {
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          username,
-          password
-        })
-      });
+      const response = await fetch(
+        `http://localhost:3000/auth/${endpoint}`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json"
+          },
+
+          body: JSON.stringify({
+            username,
+            password
+          })
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
         setMessage(data.message || "Something went wrong");
-        setLoading(false);
         return;
       }
 
-      // Signup successful
-      if (!isLogin) {
-        setMessage("Signup successful. Logging you in...");
+      if (isLogin) {
+        localStorage.setItem("token", data.token);
 
-        // Automatically login after signup
-        const loginResponse = await fetch(
-          "http://localhost:3000/auth/login",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              username,
-              password
-            })
-          }
-        );
+        onLogin();
+      } else {
+        setMessage("Signup successful. Please login.");
 
-        const loginData = await loginResponse.json();
+        setIsLogin(true);
 
-        if (!loginResponse.ok) {
-          setMessage("Signup successful. Please login.");
-          setIsLogin(true);
-          setLoading(false);
-          return;
-        }
-
-        localStorage.setItem("token", loginData.token);
-
-        onLogin(loginData.token);
-
-        return;
+        setPassword("");
       }
-
-      // Login successful
-      localStorage.setItem("token", data.token);
-
-      onLogin(data.token);
     } catch (error) {
       console.error(error);
-      setMessage("Cannot connect to server");
+      setMessage("Server is not running");
     }
-
-    setLoading(false);
   }
 
   return (
-    <div className="auth-container">
-      <div className="auth-box">
-        <h2>{isLogin ? "Login" : "Create Account"}</h2>
+    <div className="auth-container" >
 
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(event) => setUsername(event.target.value)}
-          />
+      <form className="auth-box" onSubmit={handleSubmit}>
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-          />
+        <h2>
+          {isLogin ? "Login" : "Create Account"}
+        </h2>
 
-          <button type="submit" disabled={loading}>
-            {loading
-              ? "Please wait..."
-              : isLogin
-              ? "Login"
-              : "Sign Up"}
-          </button>
-        </form>
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(event) =>
+            setUsername(event.target.value)
+          }
+          required
+        />
 
-        {message && <p className="auth-message">{message}</p>}
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(event) =>
+            setPassword(event.target.value)
+          }
+          required
+        />
 
-        <p className="switch-auth">
+        <button type="submit">
+          {isLogin ? "Login" : "Sign Up"}
+        </button>
+
+        {message && (
+          <p className="auth-message">
+            {message}
+          </p>
+        )}
+
+        <button
+          type="button"
+          className="auth-switch"
+          onClick={() => {
+            setIsLogin((prev) => !prev);
+            setMessage("");
+          }}
+        >
           {isLogin
-            ? "Don't have an account?"
-            : "Already have an account?"}
+            ? "Don't have an account? Sign Up"
+            : "Already have an account? Login"}
+        </button>
 
-          <button
-            type="button"
-            onClick={() => {
-              setIsLogin((prev) => !prev);
-              setMessage("");
-            }}
-          >
-            {isLogin ? "Sign Up" : "Login"}
-          </button>
-        </p>
-      </div>
+      </form>
+
     </div>
   );
 }
